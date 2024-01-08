@@ -1,8 +1,12 @@
-import time
+import random
+
+from selenium.webdriver.common.by import By
 
 from generator.generator import generated_person
-from locators.element_page_locators import FormPageLocators #, CheckBoxPageLocators
+from locators.element_page_locators import FormPageLocators, CheckBoxPageLocators, \
+    RadioButtonPageLocators  # , CheckBoxPageLocators
 from pages.base_pages import BasePage
+from selenium import webdriver
 
 
 class TextBoxPage(BasePage):
@@ -31,3 +35,42 @@ class TextBoxPage(BasePage):
         current_address = self.element_is_present(self.locator.OUTPUT_CURRENT_ADDRESS).text.split(":")[1]
         permanent_address = self.element_is_present(self.locator.OUTPUT_PERMANENT_ADDRESS).text.split(":")[1]
         return full_name, email, current_address, permanent_address
+
+# TEST НЕ РАБОТАЕТ
+class CheckBoxPage(BasePage):
+    locators = CheckBoxPageLocators()
+
+    def open_full_list(self):
+        self.element_is_visible(self.locators.EXPAND_ALL_BUTTON).click()
+
+    def click_random_checkbox(self):#хранится весь лист элеменов - чекбоксов
+        item_list = self.elements_are_visible(self.locators.ITEM_LIST) #пишем self так как element_is_visible в base page а там __init__
+        item = item_list[random.randint(1, 15)]
+        item.click()
+
+    def get_checked_checkboxes(self):# получаем выбранные чекбоксы для последующей проверки
+        checked_list = self.elements_are_present(self.locators.CHECKED_ITEMS)
+       # print(checked_list)
+        data = []
+        for box in checked_list:
+            title_item = box.find_element(By.XPATH, self.locators.TITLE_ITEM)
+            data.append(title_item.text)
+        print(data)
+
+class RadioButtonPage(BasePage):
+    locators = RadioButtonPageLocators()
+    def click_on_the_radio_button(self, choice): #в choice передается Yes Impressive NO
+        #создаем словарь с вариантами радиобатанов
+        choices = {'yes': self.locators.YES_RADIOBUTTON,
+                  'impressive': self.locators.IMPRESSIVE_RADIBUTTON,
+                  'no': self.locators.NO_RADIOBUTTON}
+
+        self.element_is_visible(choices[choice]).click() #обращение к элменту словаря dict_sample["model"]
+
+    def get_output_result(self):
+        return self.element_is_present(self.locators.OUTPUT_RESULT).text #вернет текст который будет assert
+
+
+
+
+
